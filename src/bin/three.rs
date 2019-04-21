@@ -7,31 +7,29 @@ use nalgebra::{Vector3, UnitQuaternion, Translation3, Point3};
 const POINT_TRAIL_LEN: usize = 500;
 const POINT_TRAIL_INTENSITY_DECAY: f32 = 1.0 / POINT_TRAIL_LEN as f32;
 
-struct AppState {
+struct Lorenz3d {
     lz: lorenz::Lorenz,
-    rot: UnitQuaternion<f32>,
-    cube: SceneNode,
-    points: VecDeque<Point3<f32>>
+    head_rot: UnitQuaternion<f32>,
+    head: SceneNode,
+    trail: VecDeque<Point3<f32>>
 }
 
-impl AppState {
-    fn new(window: &mut Window) -> Self {
-        let mut cube = window.add_cube(0.15, 0.15, 0.15);
-        let rot = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.014);
+impl Lorenz3d {
+    fn new(window: &mut Window, x: f64, y: f64, z: f64, r: f32, g: f32, b:f32) -> Self {
+        let mut head = window.add_cube(0.15, 0.15, 0.15);
+        let head_rot = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.014);
         let lz = lorenz::Lorenz {
-            x: 0.1,
-            y: 0.1,
-            z: 0.1,
+            x,
+            y,
+            z,
             .. Default::default()
         };
-        let points = VecDeque::with_capacity(POINT_TRAIL_LEN + 1);
+        let trail = VecDeque::with_capacity(POINT_TRAIL_LEN + 1);
 
-        cube.set_color(1.0, 0.0, 0.0);
-        AppState { cube, rot, lz, points }
+        head.set_color(r, g, b);
+        Lorenz3d { lz, head_rot, head, trail }
     }
-}
 
-impl State for AppState {
     fn step(&mut self, window: &mut Window) {
         self.lz.update(0.01);
         let scale = 0.1;
@@ -41,15 +39,36 @@ impl State for AppState {
             self.lz.z as f32 * scale
         );
         let t = Translation3::from(vector);
-        self.cube.set_local_translation(t);
-        self.cube.prepend_to_local_rotation(&self.rot);
-        self.points.push_front(Point3::from(vector));
-        self.points.truncate(POINT_TRAIL_LEN);
+        self.head.set_local_translation(t);
+        self.head.prepend_to_local_rotation(&self.head_rot);
+        self.trail.push_front(Point3::from(vector));
+        self.trail.truncate(POINT_TRAIL_LEN);
         let mut c = 1.0;
-        for point in self.points.iter() {
+        for point in self.trail.iter() {
             window.draw_point(point, &Point3::new(c, c, c));
             c -= POINT_TRAIL_INTENSITY_DECAY;
         }
+    }
+}
+
+struct AppState {
+    l3d: Lorenz3d
+}
+
+impl AppState {
+    fn new(window: &mut Window) -> Self {
+        let l3d = Lorenz3d::new(
+            window,
+            0.1, 0.1, 0.1,
+            1.0, 0.0, 0.0
+        );
+        AppState { l3d }
+    }
+}
+
+impl State for AppState {
+    fn step(&mut self, window: &mut Window) {
+        self.l3d.step(window);
     }
 }
 
