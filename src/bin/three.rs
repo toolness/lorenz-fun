@@ -6,7 +6,7 @@ use kiss3d::scene::SceneNode;
 use std::collections::vec_deque::VecDeque;
 use nalgebra::{Vector3, UnitQuaternion, Translation3, Point3, Point2};
 
-const POINT_TRAIL_LEN: usize = 500;
+const POINT_TRAIL_LEN: usize = 1000;
 const POINT_TRAIL_INTENSITY_DECAY: f32 = 1.0 / POINT_TRAIL_LEN as f32;
 const HELP_LINES: [&'static str; 4] = [
     "Press '1' or '2' to try different Lorenz configurations.",
