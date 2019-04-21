@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cargo web build --target wasm32-unknown-unknown",
     "build:release": "rm -rf dist && mkdir dist && cp index.html dist && cargo web build --release --target wasm32-unknown-unknown && cp target/wasm32-unknown-unknown/release/three.* dist",
+    "deploy": "npm run build:release && gh-pages --dist dist",
     "start": "node server.js"
   },
   "repository": {
@@ -19,6 +20,7 @@
   },
   "homepage": "https://github.com/toolness/lorenz-fun#readme",
   "dependencies": {
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "gh-pages": "^2.0.1"
   }
 }
