@@ -66,10 +66,14 @@ impl Lorenz3d {
         self.trail.push_front(Point3::from(vector));
         self.trail.truncate(POINT_TRAIL_LEN);
         let mut intensity = 1.0;
+        let mut opt_last_point = None;
         for point in self.trail.iter() {
-            let color = intensity * self.color;
-            window.draw_point(point, &color);
-            intensity -= POINT_TRAIL_INTENSITY_DECAY;
+            if let Some(last_point) = opt_last_point {
+                let color = intensity * self.color;
+                window.draw_line(last_point, point, &color);
+                intensity -= POINT_TRAIL_INTENSITY_DECAY;
+            }
+            opt_last_point = Some(point);
         }
     }
 
@@ -171,7 +175,6 @@ fn main() {
     let mut app = AppState::new();
 
     window.set_light(Light::StickToCamera);
-    window.set_point_size(1.0);
     app.init_config(&mut window, LorenzConfig::One);
 
     window.render_loop(app);
