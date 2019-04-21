@@ -1,12 +1,17 @@
 use kiss3d::window::{Window, State};
 use kiss3d::light::Light;
 use kiss3d::scene::SceneNode;
-use nalgebra::{Vector3, UnitQuaternion, Translation3};
+use std::collections::vec_deque::VecDeque;
+use nalgebra::{Vector3, UnitQuaternion, Translation3, Point3};
+
+const POINT_TRAIL_LEN: usize = 500;
+const POINT_TRAIL_INTENSITY_DECAY: f32 = 1.0 / POINT_TRAIL_LEN as f32;
 
 struct AppState {
     lz: lorenz::Lorenz,
     rot: UnitQuaternion<f32>,
-    cube: SceneNode
+    cube: SceneNode,
+    points: VecDeque<Point3<f32>>
 }
 
 impl AppState {
@@ -19,14 +24,15 @@ impl AppState {
             z: 0.1,
             .. Default::default()
         };
+        let points = VecDeque::with_capacity(POINT_TRAIL_LEN + 1);
 
         cube.set_color(1.0, 0.0, 0.0);
-        AppState { cube, rot, lz }
+        AppState { cube, rot, lz, points }
     }
 }
 
 impl State for AppState {
-    fn step(&mut self, _window: &mut Window) {
+    fn step(&mut self, window: &mut Window) {
         self.lz.update(0.01);
         let scale = 0.1;
         let vector = Vector3::new(
@@ -37,6 +43,13 @@ impl State for AppState {
         let t = Translation3::from(vector);
         self.cube.set_local_translation(t);
         self.cube.prepend_to_local_rotation(&self.rot);
+        self.points.push_front(Point3::from(vector));
+        self.points.truncate(POINT_TRAIL_LEN);
+        let mut c = 1.0;
+        for point in self.points.iter() {
+            window.draw_point(point, &Point3::new(c, c, c));
+            c -= POINT_TRAIL_INTENSITY_DECAY;
+        }
     }
 }
 
@@ -45,6 +58,7 @@ fn main() {
     let app = AppState::new(&mut window);
 
     window.set_light(Light::StickToCamera);
+    window.set_point_size(1.0);
 
     window.render_loop(app);
 }
