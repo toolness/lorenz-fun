@@ -1,0 +1,1 @@
+C:\Users\Atul\Documents\explorations\lorenz-fun\target\wasm32-unknown-unknown\release\three.wasm: C:\Users\Atul\Documents\explorations\lorenz-fun\src\bin\three.rs C:\Users\Atul\Documents\explorations\lorenz-fun\src\lib.rs
