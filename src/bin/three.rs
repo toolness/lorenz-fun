@@ -15,19 +15,25 @@ struct Lorenz3d {
 }
 
 impl Lorenz3d {
-    fn new(window: &mut Window, x: f64, y: f64, z: f64, r: f32, g: f32, b:f32) -> Self {
-        let mut head = window.add_cube(0.15, 0.15, 0.15);
+    fn new(window: &mut Window) -> Self {
+        let head = window.add_cube(0.15, 0.15, 0.15);
         let head_rot = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.014);
-        let lz = lorenz::Lorenz {
-            x,
-            y,
-            z,
-            .. Default::default()
-        };
+        let lz = lorenz::Lorenz { .. Default::default() };
         let trail = VecDeque::with_capacity(POINT_TRAIL_LEN + 1);
 
-        head.set_color(r, g, b);
         Lorenz3d { lz, head_rot, head, trail }
+    }
+
+    fn with_pos(mut self, x: f64, y: f64, z: f64) -> Self {
+        self.lz.x = x;
+        self.lz.y = y;
+        self.lz.z = z;
+        self
+    }
+
+    fn with_color(mut self, r: f32, g: f32, b: f32) -> Self {
+        self.head.set_color(r, g, b);
+        self
     }
 
     fn step(&mut self, window: &mut Window) {
@@ -57,11 +63,9 @@ struct AppState {
 
 impl AppState {
     fn new(window: &mut Window) -> Self {
-        let l3d = Lorenz3d::new(
-            window,
-            0.1, 0.1, 0.1,
-            1.0, 0.0, 0.0
-        );
+        let l3d = Lorenz3d::new(window)
+          .with_pos(0.1, 0.1, 0.1)
+          .with_color(1.0, 0.0, 0.0);
         AppState { l3d }
     }
 }
