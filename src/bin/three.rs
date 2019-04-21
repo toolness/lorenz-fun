@@ -1,12 +1,19 @@
 use kiss3d::window::{Window, State};
 use kiss3d::event::{Action, WindowEvent, Key};
 use kiss3d::light::Light;
+use kiss3d::text::Font;
 use kiss3d::scene::SceneNode;
 use std::collections::vec_deque::VecDeque;
-use nalgebra::{Vector3, UnitQuaternion, Translation3, Point3};
+use nalgebra::{Vector3, UnitQuaternion, Translation3, Point3, Point2};
 
 const POINT_TRAIL_LEN: usize = 500;
 const POINT_TRAIL_INTENSITY_DECAY: f32 = 1.0 / POINT_TRAIL_LEN as f32;
+const HELP_LINES: [&'static str; 4] = [
+    "Press '1' or '2' to try different Lorenz configurations.",
+    "Scroll the mousewheel to zoom.",
+    "Left-click drag to rotate the camera, right-click drag to pan it.",
+    "Press 'h' to toggle this help text."
+];
 
 enum LorenzConfig {
     One,
@@ -72,12 +79,18 @@ impl Lorenz3d {
 }
 
 struct AppState {
-    l3ds: Vec<Lorenz3d>
+    l3ds: Vec<Lorenz3d>,
+    font: std::rc::Rc<Font>,
+    show_help: bool
 }
 
 impl AppState {
     fn new() -> Self {
-        AppState { l3ds: Vec::new() }
+        AppState {
+            l3ds: Vec::new(),
+            font: Font::default(),
+            show_help: true
+        }
     }
 
     fn clear(&mut self, window: &mut Window) {
@@ -101,8 +114,22 @@ impl AppState {
                     .with_color(1.0, 0.0, 0.0));
                 self.l3ds.push(Lorenz3d::new(window)
                     .with_pos(0.1000001, 0.1, 0.1)
-                    .with_color(0.0, 0.0, 1.0));
+                    .with_color(1.0, 0.0, 1.0));
             }
+        }
+    }
+
+    fn draw_help(&self, window: &mut Window) {
+        let mut y = 8.0;
+        for line in HELP_LINES.iter() {
+            window.draw_text(
+                line,
+                &Point2::new(8.0, y),
+                36.0,
+                &self.font,
+                &Point3::new(1.0, 1.0, 1.0)
+            );
+            y += 40.0;
         }
     }
 }
@@ -111,7 +138,7 @@ impl State for AppState {
     fn step(&mut self, window: &mut Window) {
         for mut event in window.events().iter() {
             match event.value {
-                WindowEvent::Key(button, Action::Release, _) => {
+                WindowEvent::Key(button, Action::Press, _) => {
                     match button {
                         Key::Key1 => {
                             self.init_config(window, LorenzConfig::One);
@@ -120,7 +147,10 @@ impl State for AppState {
                         Key::Key2 => {
                             self.init_config(window, LorenzConfig::Two);
                             event.inhibited = true;
-                        }
+                        },
+                        Key::H => {
+                            self.show_help = !self.show_help;
+                        },
                         _ => {}
                     }
                 },
@@ -129,6 +159,9 @@ impl State for AppState {
         }
         for l3d in self.l3ds.iter_mut() {
             l3d.step(window);
+        }
+        if self.show_help {
+            self.draw_help(window);
         }
     }
 }
