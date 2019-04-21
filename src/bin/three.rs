@@ -9,6 +9,7 @@ const POINT_TRAIL_INTENSITY_DECAY: f32 = 1.0 / POINT_TRAIL_LEN as f32;
 
 struct Lorenz3d {
     lz: lorenz::Lorenz,
+    color: Point3<f32>,
     head_rot: UnitQuaternion<f32>,
     head: SceneNode,
     trail: VecDeque<Point3<f32>>
@@ -16,12 +17,13 @@ struct Lorenz3d {
 
 impl Lorenz3d {
     fn new(window: &mut Window) -> Self {
+        let color = Point3::new(1.0, 1.0, 1.0);
         let head = window.add_cube(0.15, 0.15, 0.15);
         let head_rot = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.014);
         let lz = lorenz::Lorenz { .. Default::default() };
         let trail = VecDeque::with_capacity(POINT_TRAIL_LEN + 1);
 
-        Lorenz3d { lz, head_rot, head, trail }
+        Lorenz3d { lz, color, head_rot, head, trail }
     }
 
     fn with_pos(mut self, x: f64, y: f64, z: f64) -> Self {
@@ -32,6 +34,7 @@ impl Lorenz3d {
     }
 
     fn with_color(mut self, r: f32, g: f32, b: f32) -> Self {
+        self.color = Point3::new(r, g, b);
         self.head.set_color(r, g, b);
         self
     }
@@ -49,10 +52,11 @@ impl Lorenz3d {
         self.head.prepend_to_local_rotation(&self.head_rot);
         self.trail.push_front(Point3::from(vector));
         self.trail.truncate(POINT_TRAIL_LEN);
-        let mut c = 1.0;
+        let mut intensity = 1.0;
         for point in self.trail.iter() {
-            window.draw_point(point, &Point3::new(c, c, c));
-            c -= POINT_TRAIL_INTENSITY_DECAY;
+            let color = intensity * self.color;
+            window.draw_point(point, &color);
+            intensity -= POINT_TRAIL_INTENSITY_DECAY;
         }
     }
 }
