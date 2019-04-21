@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cargo web build --target wasm32-unknown-unknown",
+    "build:release": "rm -rf dist && mkdir dist && cp index.html dist && cargo web build --release --target wasm32-unknown-unknown && cp target/wasm32-unknown-unknown/release/three.* dist",
     "start": "node server.js"
   },
   "repository": {
