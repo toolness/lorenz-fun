@@ -894,7 +894,10 @@ Module.STDWEB_PRIVATE.acquire_tmp = function( dummy ) {
             Object.defineProperty( Module, 'web_free', { value: Module.instance.exports.__web_free } );
             Object.defineProperty( Module, 'web_table', { value: Module.instance.exports.__indirect_function_table } );
 
-            
+            Module.exports.init_config = function init_config(config) {
+    return Module.STDWEB_PRIVATE.acquire_tmp(Module.instance.exports.init_config(config));
+}
+;
             __web_on_grow();
             Module.instance.exports.main();
 
