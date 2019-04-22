@@ -12,10 +12,12 @@ use nalgebra::{Vector3, UnitQuaternion, Translation3, Point3, Point2};
 
 const POINT_TRAIL_LEN: usize = 1000;
 const POINT_TRAIL_INTENSITY_DECAY: f32 = 1.0 / POINT_TRAIL_LEN as f32;
-const HELP_LINES: [&'static str; 4] = [
-    "Press '1' or '2' to try different Lorenz configurations.",
+const HELP_LINES: [&'static str; 6] = [
+    "Press '1' for Lorenz config 1.",
+    "Press '2' for Lorenz config 2.",
     "Scroll the mousewheel to zoom.",
-    "Left-click drag to rotate the camera, right-click drag to pan it.",
+    "Left-click drag to rotate.",
+    "Right-click drag to pan.",
     "Press 'h' to toggle this help text."
 ];
 
