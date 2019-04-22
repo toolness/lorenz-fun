@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 html, body, canvas {
     margin: 0px;
@@ -25,3 +26,13 @@ html, body, canvas {
 <canvas id="canvas"></canvas>
 <a id="learn" href="https://github.com/toolness/lorenz-fun/#readme" target="_blank">About this experiment</a>
 <script src="./three.js"></script>
+<script>
+function initConfig(value) {
+    Rust.three.then(exports => {
+        const success = exports.init_config(value);
+        if (success !== true) {
+            console.log(`setConfig(${value}) failed!`);
+        }
+    });
+}
+</script>

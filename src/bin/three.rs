@@ -1,3 +1,7 @@
+#[cfg(target_arch = "wasm32")]
+#[macro_use]
+extern crate stdweb;
+
 use kiss3d::window::{Window, State};
 use kiss3d::event::{Action, WindowEvent, Key};
 use kiss3d::light::Light;
@@ -15,6 +19,7 @@ const HELP_LINES: [&'static str; 4] = [
     "Press 'h' to toggle this help text."
 ];
 
+#[derive(Clone, Copy)]
 enum LorenzConfig {
     One,
     Two
@@ -140,6 +145,13 @@ impl AppState {
 
 impl State for AppState {
     fn step(&mut self, window: &mut Window) {
+        #[cfg(target_arch = "wasm32")]
+        {
+            if let Some(config) = check_config_to_init() {
+                self.init_config(window, config);
+            }
+        }
+
         for mut event in window.events().iter() {
             match event.value {
                 WindowEvent::Key(button, Action::Press, _) => {
@@ -166,6 +178,37 @@ impl State for AppState {
         }
         if self.show_help {
             self.draw_help(window);
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+static mut CONFIG_TO_INIT: Option<LorenzConfig> = None;
+
+#[cfg(target_arch = "wasm32")]
+fn check_config_to_init() -> Option<LorenzConfig> {
+    let result;
+    unsafe {
+        result = CONFIG_TO_INIT;
+        CONFIG_TO_INIT = None;
+    }
+    result
+}
+
+#[cfg(target_arch = "wasm32")]
+#[js_export]
+fn init_config(config: i32) -> bool {
+    match config {
+        1 => {
+            unsafe { CONFIG_TO_INIT = Some(LorenzConfig::One); }
+            true
+        },
+        2 => {
+            unsafe { CONFIG_TO_INIT = Some(LorenzConfig::Two); }
+            true
+        },
+        _ => {
+            false
         }
     }
 }
