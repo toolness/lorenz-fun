@@ -10,7 +10,7 @@ html, body, canvas {
     overflow: hidden;
 }
 
-#learn {
+#info {
     position: absolute;
     bottom: 8px;
     right: 8px;
@@ -18,13 +18,35 @@ html, body, canvas {
     color: lightgray;
 }
 
-#learn:hover {
+#info button {
+    border: 1px solid lightgray;
+    background: transparent;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+#info button:hover {
+    color: white;
+    border-color: white;
+}
+
+#info a {
+    color: inherit;
+    font-family: inherit;
+}
+
+#info a:hover {
     color: white;
 }
 </style>
 <title>Lorenz Fun</title>
 <canvas id="canvas"></canvas>
-<a id="learn" href="https://github.com/toolness/lorenz-fun/#readme" target="_blank">About this experiment</a>
+<div id="info">
+  <a href="https://github.com/toolness/lorenz-fun/#readme" target="_blank">About this experiment</a>
+  <button id="cfg_one">1</button>
+  <button id="cfg_two">2</button>
+</div>
 <script src="./three.js"></script>
 <script>
 function initConfig(value) {
@@ -35,4 +57,9 @@ function initConfig(value) {
         }
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('cfg_one').onclick = () => initConfig(1);
+    document.getElementById('cfg_two').onclick = () => initConfig(2);
+});
 </script>
