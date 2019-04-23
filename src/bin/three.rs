@@ -28,6 +28,27 @@ enum LorenzConfig {
     Two
 }
 
+#[derive(Clone, Copy)]
+enum AppAction {
+    InitConfig(LorenzConfig),
+    ToggleHelp,
+    AddObj,
+    RemoveObj
+}
+
+impl AppAction {
+    fn from_key(key: Key) -> Option<Self> {
+        match key {
+            Key::Key1 => Some(AppAction::InitConfig(LorenzConfig::One)),
+            Key::Key2 => Some(AppAction::InitConfig(LorenzConfig::Two)),
+            Key::H => Some(AppAction::ToggleHelp),
+            Key::Equals => Some(AppAction::AddObj),
+            Key::Minus => Some(AppAction::RemoveObj),
+            _ => None
+        }
+    }
+}
+
 struct Lorenz3d {
     lz: lorenz::Lorenz,
     color: Point3<f32>,
@@ -147,6 +168,12 @@ impl AppState {
         self.l3ds.push(l3d);
     }
 
+    fn remove_l3d(&mut self, window: &mut Window) {
+        if let Some(mut l3d) = self.l3ds.pop() {
+            l3d.remove(window);
+        }
+    }
+
     fn draw_help(&self, window: &mut Window) {
         let mut y = 8.0;
         for line in HELP_LINES.iter() {
@@ -158,6 +185,15 @@ impl AppState {
                 &Point3::new(1.0, 1.0, 1.0)
             );
             y += 40.0;
+        }
+    }
+
+    fn execute_action(&mut self, action: AppAction, window: &mut Window) {
+        match action {
+            AppAction::InitConfig(cfg) => self.init_config(window, cfg),
+            AppAction::ToggleHelp => self.show_help = !self.show_help,
+            AppAction::AddObj => self.add_random_l3d(window),
+            AppAction::RemoveObj => self.remove_l3d(window)
         }
     }
 }
@@ -174,27 +210,9 @@ impl State for AppState {
         for mut event in window.events().iter() {
             match event.value {
                 WindowEvent::Key(button, Action::Press, _) => {
-                    match button {
-                        Key::Key1 => {
-                            self.init_config(window, LorenzConfig::One);
-                            event.inhibited = true;
-                        },
-                        Key::Key2 => {
-                            self.init_config(window, LorenzConfig::Two);
-                            event.inhibited = true;
-                        },
-                        Key::H => {
-                            self.show_help = !self.show_help;
-                        },
-                        Key::Equals => {
-                            self.add_random_l3d(window);
-                        },
-                        Key::Minus => {
-                            if let Some(mut l3d) = self.l3ds.pop() {
-                                l3d.remove(window);
-                            }
-                        },
-                        _ => {}
+                    if let Some(action) = AppAction::from_key(button) {
+                        event.inhibited = true;
+                        self.execute_action(action, window);
                     }
                 },
                 _ => {}
