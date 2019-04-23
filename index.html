@@ -46,20 +46,21 @@ html, body, canvas {
   <a href="https://github.com/toolness/lorenz-fun/#readme" target="_blank">About this experiment</a>
   <button id="cfg_one">1</button>
   <button id="cfg_two">2</button>
+  <button id="toggle_help">h</button>
 </div>
 <script src="./three.js"></script>
 <script>
-function initConfig(value) {
-    Rust.three.then(exports => {
-        const success = exports.init_config(value);
+document.addEventListener('DOMContentLoaded', async () => {
+    const three = await Rust.three;
+    const initConfig = value => {
+        const success = three.init_config(value);
         if (success !== true) {
-            console.log(`setConfig(${value}) failed!`);
+            console.log(`init_config(${value}) failed!`);
         }
-    });
-}
+    };
 
-document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cfg_one').onclick = () => initConfig(1);
     document.getElementById('cfg_two').onclick = () => initConfig(2);
+    document.getElementById('toggle_help').onclick = () => three.toggle_help();
 });
 </script>
