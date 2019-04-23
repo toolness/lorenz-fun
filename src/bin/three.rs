@@ -7,6 +7,7 @@ use kiss3d::event::{Action, WindowEvent, Key};
 use kiss3d::light::Light;
 use kiss3d::text::Font;
 use kiss3d::scene::SceneNode;
+use rand::prelude::*;
 use std::collections::vec_deque::VecDeque;
 use nalgebra::{Vector3, UnitQuaternion, Translation3, Point3, Point2};
 
@@ -92,7 +93,8 @@ impl Lorenz3d {
 struct AppState {
     l3ds: Vec<Lorenz3d>,
     font: std::rc::Rc<Font>,
-    show_help: bool
+    show_help: bool,
+    rng: ThreadRng
 }
 
 impl AppState {
@@ -100,7 +102,8 @@ impl AppState {
         AppState {
             l3ds: Vec::new(),
             font: Font::default(),
-            show_help: true
+            show_help: true,
+            rng: rand::thread_rng()
         }
     }
 
@@ -128,6 +131,20 @@ impl AppState {
                     .with_color(1.0, 0.0, 1.0));
             }
         }
+    }
+
+    fn add_random_l3d(&mut self, window: &mut Window) {
+        let rng = &mut self.rng;
+        let scale = 20.0;
+        let ofs = -10.0;
+        let l3d = Lorenz3d::new(window)
+            .with_pos(
+                ofs + rng.gen::<f64>() * scale,
+                ofs + rng.gen::<f64>() * scale,
+                ofs + rng.gen::<f64>() * scale
+            )
+            .with_color(rng.gen(), rng.gen(), rng.gen());
+        self.l3ds.push(l3d);
     }
 
     fn draw_help(&self, window: &mut Window) {
@@ -168,6 +185,14 @@ impl State for AppState {
                         },
                         Key::H => {
                             self.show_help = !self.show_help;
+                        },
+                        Key::Equals => {
+                            self.add_random_l3d(window);
+                        },
+                        Key::Minus => {
+                            if let Some(mut l3d) = self.l3ds.pop() {
+                                l3d.remove(window);
+                            }
                         },
                         _ => {}
                     }
