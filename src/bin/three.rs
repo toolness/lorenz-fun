@@ -129,10 +129,9 @@ impl AppState {
     }
 
     fn clear(&mut self, window: &mut Window) {
-        for l3d in self.l3ds.iter_mut() {
-            l3d.remove(window);
+        while self.l3ds.len() > 0 {
+            self.remove_l3d(window);
         }
-        self.l3ds.clear();
     }
 
     fn init_config(&mut self, window: &mut Window, config: LorenzConfig) {
