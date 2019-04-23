@@ -201,8 +201,8 @@ impl State for AppState {
     fn step(&mut self, window: &mut Window) {
         #[cfg(target_arch = "wasm32")]
         {
-            if let Some(config) = check_config_to_init() {
-                self.init_config(window, config);
+            if let Some(action) = check_action_from_js() {
+                self.execute_action(action, window);
             }
         }
 
@@ -227,34 +227,28 @@ impl State for AppState {
 }
 
 #[cfg(target_arch = "wasm32")]
-static mut CONFIG_TO_INIT: Option<LorenzConfig> = None;
+static mut ACTION_FROM_JS: Option<AppAction> = None;
 
 #[cfg(target_arch = "wasm32")]
-fn check_config_to_init() -> Option<LorenzConfig> {
+fn check_action_from_js() -> Option<AppAction> {
     let result;
     unsafe {
-        result = CONFIG_TO_INIT;
-        CONFIG_TO_INIT = None;
+        result = ACTION_FROM_JS;
+        ACTION_FROM_JS = None;
     }
     result
 }
 
 #[cfg(target_arch = "wasm32")]
 #[js_export]
-fn init_config(config: i32) -> bool {
-    match config {
-        1 => {
-            unsafe { CONFIG_TO_INIT = Some(LorenzConfig::One); }
-            true
-        },
-        2 => {
-            unsafe { CONFIG_TO_INIT = Some(LorenzConfig::Two); }
-            true
-        },
-        _ => {
-            false
-        }
-    }
+fn init_config(config_int: i32) -> bool {
+    let config = match config_int {
+        1 => LorenzConfig::One,
+        2 => LorenzConfig::Two,
+        _ => return false
+    };
+    unsafe { ACTION_FROM_JS = Some(AppAction::InitConfig(config)); }
+    true
 }
 
 fn main() {
