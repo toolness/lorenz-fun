@@ -241,6 +241,12 @@ fn check_action_from_js() -> Option<AppAction> {
 
 #[cfg(target_arch = "wasm32")]
 #[js_export]
+fn toggle_help() {
+    unsafe { ACTION_FROM_JS = Some(AppAction::ToggleHelp); }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[js_export]
 fn init_config(config_int: i32) -> bool {
     let config = match config_int {
         1 => LorenzConfig::One,
