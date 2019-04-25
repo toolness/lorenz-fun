@@ -52,7 +52,6 @@ impl AppAction {
 struct Lorenz3d {
     lz: lorenz::Lorenz,
     color: Point3<f32>,
-    head_rot: UnitQuaternion<f32>,
     head: SceneNode,
     trail: VecDeque<Point3<f32>>
 }
@@ -60,12 +59,11 @@ struct Lorenz3d {
 impl Lorenz3d {
     fn new(window: &mut Window) -> Self {
         let color = Point3::new(1.0, 1.0, 1.0);
-        let head = window.add_cube(0.15, 0.15, 0.15);
-        let head_rot = UnitQuaternion::from_axis_angle(&Vector3::y_axis(), 0.014);
+        let head = window.add_cone(0.05, 0.15);
         let lz = lorenz::Lorenz { .. Default::default() };
         let trail = VecDeque::with_capacity(POINT_TRAIL_LEN + 1);
 
-        Lorenz3d { lz, color, head_rot, head, trail }
+        Lorenz3d { lz, color, head, trail }
     }
 
     fn with_pos(mut self, x: f64, y: f64, z: f64) -> Self {
@@ -91,7 +89,12 @@ impl Lorenz3d {
         );
         let t = Translation3::from(vector);
         self.head.set_local_translation(t);
-        self.head.prepend_to_local_rotation(&self.head_rot);
+        //self.head.prepend_to_local_rotation(&self.head_rot);
+        if let Some(last_point) = self.trail.get(0) {
+            let direction = Point3::from(vector) - last_point;
+            let rot = UnitQuaternion::look_at_lh(&direction, &Vector3::z_axis());
+            self.head.set_local_rotation(rot);
+        }
         self.trail.push_front(Point3::from(vector));
         self.trail.truncate(POINT_TRAIL_LEN);
         let mut intensity = 1.0;
